@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labo virtuel – Le cristal de chlorure de sodium</title>
+<style>
+  :root{
+    --ink:#1d2433; --muted:#5b6475; --line:#d9dee7; --bg:#f6f7fa; --card:#fff;
+    --accent:#2f5bd3; --ok:#1f8a4c; --warn:#b4541a; --cl:#3aa655; --na:#7b5cd6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px}
+  header h1{margin:0;font-size:1.35rem}
+  header p{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+  nav{display:flex;gap:6px;padding:0 24px;background:#fff;border-bottom:1px solid var(--line)}
+  nav button{border:0;background:none;padding:12px 14px;font:inherit;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer}
+  nav button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+  main{max-width:1180px;margin:0 auto;padding:20px 24px 40px}
+  .grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h2{font-size:1.02rem;margin:0 0 10px}
+  .card h3{font-size:.95rem;margin:14px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .btns{display:flex;flex-wrap:wrap;gap:8px}
+  button.b{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  button.b:hover{border-color:var(--accent)}
+  button.b.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.b:disabled{opacity:.45;cursor:not-allowed}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:#fff;padding:8px 12px;font:inherit;font-size:.92rem;cursor:pointer;color:#1d2433}
+  .seg button:disabled{color:#1d2433;cursor:not-allowed}
+  .seg button[aria-pressed="true"]:disabled{color:#fff}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  #msg{margin-top:12px;padding:10px 12px;border-radius:8px;background:#eef2fb;color:#23376e;font-size:.93rem;min-height:2.6em}
+  #msg.warn{background:#fdf0e6;color:var(--warn)}
+  #msg.ok{background:#e7f5ec;color:var(--ok)}
+  svg{display:block;width:100%;height:auto}
+  .loupe-wrap{display:flex;gap:14px;align-items:flex-start}
+  .loupe{flex:0 0 190px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .loupe-cap{font-size:.85rem;color:var(--muted)}
+  table.carnet{width:100%;border-collapse:collapse;font-size:.93rem}
+  table.carnet td{padding:6px 4px;border-bottom:1px solid var(--line)}
+  table.carnet input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit}
+  .res{font-size:.9rem;margin-top:8px}
+  .res div{margin:3px 0}
+  .good{color:var(--ok)} .bad{color:var(--warn)}
+  .opts label{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.94rem}
+  .opts .row{margin:10px 0}
+  #cv{width:100%;height:480px;display:block;border-radius:10px;background:radial-gradient(circle at 50% 40%,#ffffff,#eef1f6);touch-action:none;cursor:grab}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.9rem;margin-top:10px}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}
+  .hint{font-size:.88rem;color:var(--muted)}
+  [hidden]{display:none!important}
+  .fam{display:flex;gap:8px;flex-wrap:wrap}
+  .fam button{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 8px;font:inherit;font-size:.82rem;cursor:pointer;color:var(--ink);width:118px}
+  .fam button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px #c9d6f7}
+  .fam svg{width:64px;height:58px}
+  #graph{width:100%;height:260px;display:block;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:crosshair}
+  .readout{display:flex;gap:18px;align-items:baseline;margin-top:8px;font-size:.95rem}
+  .readout b{font-family:ui-monospace,Consolas,monospace;font-size:1.15rem}
+  .angle-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .angle-row input[type=range]{flex:1}
+  table.carnet.rx td{padding:4px}
+  table.carnet.rx input{padding:5px 6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Labo virtuel – Le cristal de chlorure de sodium</h1>
+  <p>Enseignement scientifique, 1re · Thème 1.2 « Des édifices ordonnés : les cristaux »</p>
+</header>
+<nav role="tablist">
+  <button role="tab" id="t1" aria-selected="true" data-tab="p1">1 · Mesurer la masse volumique</button>
+  <button role="tab" id="t2" aria-selected="false" data-tab="p2">2 · Explorer la maille en 3D</button>
+  <button role="tab" id="t3" aria-selected="false" data-tab="p3">3 · Rayons X : l'expérience des Bragg</button>
+</nav>
+
+<main>
+<!-- ================= PARTIE 1 ================= -->
+<section id="p1">
+  <div class="grid">
+    <div class="card">
+      <h2>Paillasse</h2>
+      <svg id="bench" viewBox="0 0 520 370" aria-label="Balance et éprouvette graduée"></svg>
+      <div id="msg">Commencez par poser la coupelle sur la balance.</div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Actions</h2>
+        <h3>Balance</h3>
+        <div class="btns">
+          <button class="b" id="bCup">Poser la coupelle</button>
+          <button class="b" id="bTare">Tarer (T)</button>
+          <button class="b" id="bSalt">Ajouter une spatule de gros sel</button>
+          <button class="b" id="bUnsalt">Retirer le sel</button>
+        </div>
+        <h3>Éprouvette graduée (50 mL)</h3>
+        <div class="row" style="margin-bottom:8px">
+          <span class="hint">Liquide :</span>
+          <span class="seg" id="segLiq">
+            <button data-liq="eau" aria-pressed="false">Eau</button>
+            <button data-liq="ethanol" aria-pressed="true">Éthanol</button>
+          </span>
+        </div>
+        <div class="btns">
+          <button class="b" id="bFill">Remplir l'éprouvette</button>
+          <button class="b primary" id="bPour">Verser le sel dans l'éprouvette</button>
+          <button class="b" id="bTap">Tapoter l'éprouvette</button>
+          <button class="b" id="bReset">Tout nettoyer</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Loupe sur le ménisque</h2>
+        <div class="loupe-wrap">
+          <div class="loupe"><svg id="loupe" viewBox="0 0 200 260" aria-label="Vue agrandie de la graduation"></svg></div>
+          <div class="loupe-cap">
+            <p style="margin-top:0">Vue agrandie de l'éprouvette autour de la surface du liquide.</p>
+            <p>Une graduation = 1 mL. On lit le volume <b>au bas du ménisque</b>, à 0,5 mL près.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Mon carnet de mesures</h2>
+        <table class="carnet">
+          <tr><td>Masse de sel m (g)</td><td><input id="iM" inputmode="decimal" placeholder="ex. 20,15"></td></tr>
+          <tr><td>Volume initial V₁ (mL)</td><td><input id="iV1" inputmode="decimal"></td></tr>
+          <tr><td>Volume final V₂ (mL)</td><td><input id="iV2" inputmode="decimal"></td></tr>
+          <tr><td>Masse volumique ρ (g/cm³)</td><td><input id="iR" inputmode="decimal"></td></tr>
+        </table>
+        <div class="btns" style="margin-top:10px">
+          <button class="b primary" id="bCheck">Vérifier mes mesures</button>
+        </div>
+        <div class="res" id="res"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PARTIE 2 ================= -->
+<section id="p2" hidden>
+  <div class="grid">
+    <div class="card">
+      <h2>Maille du chlorure de sodium</h2>
+      <canvas id="cv" aria-label="Modèle 3D de la maille de NaCl"></canvas>
+      <div class="legend" id="legend"></div>
+      <p class="hint">Cliquez-glissez (ou glissez le doigt) pour faire tourner le modèle.</p>
+    </div>
+    <div class="card opts">
+      <h2>Réglages</h2>
+      <div class="row">
+        <div class="hint">Nombre de mailles</div>
+        <span class="seg" id="segN">
+          <button data-n="1" aria-pressed="true">1 maille</button>
+          <button data-n="2" aria-pressed="false">2 × 2 × 2</button>
+          <button data-n="3" aria-pressed="false">3 × 3 × 3</button>
+        </span>
+      </div>
+      <div class="row">
+        <div class="hint">Taille des ions</div>
+        <span class="seg" id="segR">
+          <button data-r="eclate" aria-pressed="true">Modèle éclaté</button>
+          <button data-r="compact" aria-pressed="false">Taille réelle</button>
+        </span>
+      </div>
+      <label><input type="checkbox" id="cEdges" checked> Afficher les arêtes de la maille</label>
+      <label><input type="checkbox" id="cCl" checked> Afficher les ions chlorure Cl⁻</label>
+      <label><input type="checkbox" id="cNa" checked> Afficher les ions sodium Na⁺</label>
+      <label><input type="checkbox" id="cPos"> Colorer les ions selon leur position (1 maille)</label>
+      <label><input type="checkbox" id="cOcta"> Mettre en évidence les voisins de l'ion central (1 maille)</label>
+      <label><input type="checkbox" id="cRot" checked> Rotation automatique</label>
+      <div class="btns" style="margin-top:10px"><button class="b" id="bView">Vue de face</button><button class="b" id="bView2">Vue en perspective</button></div>
+      <h3>Données</h3>
+      <p class="hint" style="margin:0">Arête de la maille : a = 564 pm<br>Rayon de Cl⁻ : 181 pm · Rayon de Na⁺ : 102 pm<br>1 pm = 10⁻¹² m</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PARTIE 3 : RAYONS X ================= -->
+<section id="p3" hidden>
+  <div class="grid">
+    <div class="card">
+      <h2>Spectromètre de Bragg</h2>
+      <svg id="spectro" viewBox="0 -24 600 354" aria-label="Spectromètre à rayons X"></svg>
+      <div class="angle-row">
+        <span class="hint">Angle θ</span>
+        <button class="b" id="tm1">−1°</button><button class="b" id="tm01">−0,1°</button>
+        <input type="range" id="theta" min="3" max="80" step="0.1" value="10">
+        <button class="b" id="tp01">+0,1°</button><button class="b" id="tp1">+1°</button>
+      </div>
+      <div class="readout">
+        <span>θ = <b id="thv">10,0°</b></span>
+        <span>Intensité mesurée : <b id="iv">0</b> u.a.</span>
+      </div>
+      <h3>Intensité en fonction de l'angle θ</h3>
+      <canvas id="graph" aria-label="Graphique de l'intensité en fonction de l'angle"></canvas>
+      <div class="hint" id="hover">Survolez la courbe pour lire θ et l'intensité.</div>
+      <div class="btns" style="margin-top:8px">
+        <button class="b" id="bClear">Effacer la courbe</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Réglages</h2>
+        <div class="row" style="margin-bottom:10px">
+          <div class="hint">Cristal étudié</div>
+          <span class="seg" id="segX">
+            <button data-x="NaCl" aria-pressed="true">Chlorure de sodium NaCl</button>
+            <button data-x="KCl" aria-pressed="false">Chlorure de potassium KCl</button>
+          </span>
+        </div>
+        <div class="hint" style="margin-bottom:6px">Famille de plans qui réfléchit les rayons X</div>
+        <div class="fam" id="famBox"></div>
+        <h3>Données</h3>
+        <p class="hint" style="margin:0">Longueur d'onde des rayons X : <b>λ = 154 pm</b><br>
+        Loi de Bragg : <b>2 d sin θ = n λ</b> (n = 1, 2, 3… est l'ordre de la réflexion)<br>
+        On en déduit : d = n λ / (2 sin θ)</p>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Les ondes renvoyées par deux plans voisins</h2>
+        <svg id="waves" viewBox="0 0 560 300" aria-label="Ondes renvoyées par deux plans voisins et leur somme"></svg>
+        <div id="waveTxt" style="margin-top:6px;font-size:.93rem"></div>
+        <p class="hint" style="margin-bottom:0">Dans un vrai cristal, des milliers de plans renvoient chacun une onde : elles ne se renforcent toutes ensemble que pour quelques angles très précis, d'où des pics très fins.</p>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Pour aller plus loin : trouver la distance d entre les plans</h2>
+        <ol style="padding-left:20px;margin:0;font-size:.93rem">
+          <li><b>Repérer les pics.</b> Faire varier θ de 1° en 1° (bouton « +1° ») de 3° à 80°. Noter les angles autour desquels l'intensité augmente nettement.</li>
+          <li><b>Affiner.</b> Autour de chaque pic, avancer de 0,1° en 0,1° et noter l'angle θ où l'intensité est maximale.</li>
+          <li><b>Calculer sin θ</b> pour chaque pic (calculatrice en mode <b>degrés</b>).</li>
+          <li><b>Calculer l'écart k</b> entre les sin θ de deux pics qui se suivent : k = sin θ<sub>pic suivant</sub> − sin θ<sub>pic</sub>. Cet écart doit être le même pour tous les pics voisins.</li>
+          <li><b>Trouver l'ordre n de chaque pic :</b> n = sin θ / k. On doit trouver un nombre entier (1, 2, 3…). Si le premier pic donne n = 2, c'est qu'un petit pic a été oublié avant lui.</li>
+          <li><b>Calculer d</b> avec la loi de Bragg 2 d sin θ = n λ :<br>d = n × λ / (2 sin θ), ou directement d = λ / (2k).<br>Tous les pics d'une même famille de plans doivent donner la même valeur de d.</li>
+          <li><b>Remonter à la maille :</b> pour les plans parallèles aux faces, d = a / 2, donc a = 2d. Comparer avec a = 564 pm.</li>
+        </ol>
+        <div style="margin-top:10px;padding:10px 12px;background:#f3f5f9;border-radius:8px;font-size:.9rem">
+          <b>Exemple (NaCl, plans parallèles aux faces)</b><br>
+          Pics à 15,8°, 33,1° et 55,0° → sin θ = 0,2723 ; 0,5461 ; 0,8192.<br>
+          Écarts : 0,2738 et 0,2731 → k ≈ 0,273.<br>
+          Ordres : 0,2723 / 0,273 ≈ 1 ; 0,5461 / 0,273 ≈ 2 ; 0,8192 / 0,273 ≈ 3.<br>
+          d = 154 / (2 × 0,273) ≈ 282 pm, donc a = 2 × 282 = 564 pm.
+        </div>
+        <p class="hint" style="margin-bottom:0"><b>Attention avec KCl et les plans en diagonale du cube</b> : les ordres impairs ont disparu, il ne reste que les pics d'ordre 2 et 4. Les rayons X seuls ne permettent pas de le savoir : il faut comparer avec NaCl ou utiliser la masse volumique du cristal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+/* ---------- onglets ---------- */
+document.querySelectorAll('nav [role=tab]').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('nav [role=tab]').forEach(x=>x.setAttribute('aria-selected',x===t));
+    ['p1','p2','p3'].forEach(id=>document.getElementById(id).hidden = t.dataset.tab!==id);
+    if(t.dataset.tab==='p2') resize3d();
+    if(t.dataset.tab==='p3') { resizeGraph(); drawXR(); }
+  });
+});
+
+/* =====================================================
+   PARTIE 1 : simulation de mesure
+   ===================================================== */
+const RHO = 2.165;          // g/cm3, masse volumique du NaCl
+const CUP = 3.47;           // masse de la coupelle (g)
+const SOLU = 0.36;          // solubilité, g de sel par mL d'eau
+const VM_DISS = 0.284;      // mL ajoutés par g de sel dissous (volume molaire apparent)
+const S = {cup:false,tare:0,salt:0,liquid:'ethanol',V1:null,poured:false,
+           pouredMass:0,undiss:0,bub:0,Vshow:0,anim:null};
+const rnd = i => { const x=Math.sin(i*12.9898+78.233)*43758.5453; return x-Math.floor(x); };
+const fmt = (v,d)=>v.toFixed(d).replace('.',',');
+const $ = id=>document.getElementById(id);
+
+function say(t,cls){ const m=$('msg'); m.textContent=t; m.className=cls||''; }
+function balanceReading(){
+  let m=(S.cup?CUP:0)+(S.poured?0:S.salt)-S.tare;
+  if(!S.cup && !S.salt && S.tare===0) m=0;
+  return m;
+}
+function solidVolume(){ return S.undiss/RHO; }
+function targetVolume(){
+  if(S.V1===null) return 0;
+  if(!S.poured) return S.V1;
+  const diss = S.pouredMass - S.undiss;
+  return S.V1 + solidVolume() + diss*VM_DISS + S.bub;
+}
+
+const Y0=328, PX=5.4, CX=360, CW=56;  // éprouvette : y(0 mL)=322, 5,4 px/mL
+const yv = v => Y0 - v*PX;
+
+function drawBench(){
+  let s='';
+  const K='#1d2433';
+  // paillasse
+  s+=`<rect x="0" y="344" width="520" height="26" fill="#e8e3da"/>`;
+  // ---- balance ----
+  s+=`<rect x="30" y="300" width="230" height="44" rx="8" fill="#3b4252"/>`;
+  s+=`<rect x="60" y="310" width="110" height="26" rx="4" fill="#cfe8c9"/>`;
+  s+=`<text x="164" y="329" text-anchor="end" font-family="ui-monospace,Consolas,monospace" font-size="17" fill="#1d3a17">${fmt(balanceReading(),2)} g</text>`;
+  s+=`<circle cx="200" cy="323" r="9" fill="#d9534f"/><text x="200" y="327" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">T</text>`;
+  s+=`<circle cx="232" cy="323" r="9" fill="#8a93a6"/>`;
+  s+=`<rect x="120" y="292" width="50" height="8" fill="#5c6577"/>`;
+  s+=`<rect x="70" y="284" width="150" height="8" rx="3" fill="#aab2c0"/>`;
+  if(S.cup){
+    // coupelle / verre de montre : simple arrondi vers le bas
+    if(!S.poured){
+      const n=Math.min(140,Math.round(S.salt*5));
+      for(let i=0;i<n;i++){
+        const u=rnd(i); const x=108+u*70;
+        const base=281-12*Math.pow((x+2.5-145)/50,2);      // fond de la coupelle
+        const y=base-4-rnd(i+500)*Math.min(18,3+n*0.14)*(1-Math.abs(u-.5));
+        s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="5" height="5" fill="#fff" stroke="#8d96a6" stroke-width=".7" transform="rotate(${(rnd(i+900)*40-20).toFixed(0)} ${x+2.5} ${y+2.5})"/>`;
+      }
+    }
+    s+=`<path d="M95 268 Q145 300 195 268 Q145 294 95 268 Z" fill="#eef1f5" stroke="#9aa3b2" stroke-width="1.6" stroke-linejoin="round"/>`;
+  }
+  s+=`<text x="145" y="362" text-anchor="middle" font-size="12" fill="#5b6475">Balance de précision</text>`;
+  // ---- éprouvette graduée (dessin au trait) ----
+  const top=yv(50)-14;
+  if(S.V1!==null){
+    const col = S.liquid==='eau' ? '#8ec5f0' : '#f3e9b8';
+    const vs=solidVolume()+(S.poured&&S.undiss>0?S.bub:0);
+    const h=vs*PX;
+    s+=`<rect x="${CX}" y="${yv(S.Vshow).toFixed(1)}" width="${CW}" height="${(S.Vshow*PX).toFixed(1)}" fill="${col}" opacity=".6"/>`;
+    const n=Math.round(S.undiss*6);
+    for(let i=0;i<n;i++){
+      const x=CX+3+rnd(i+33)*(CW-10), y=Y0-5-rnd(i+71)*Math.max(0,h-5);
+      s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="5" height="5" fill="#fff" stroke="#8d96a6" stroke-width=".7"/>`;
+    }
+    const nb=Math.round(S.bub*14);
+    for(let i=0;i<nb;i++){
+      const x=CX+4+rnd(i+211)*(CW-8), y=Y0-4-rnd(i+307)*Math.max(0,h-4);
+      s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.9" fill="#fff" stroke="#5b6475" stroke-width=".6"/>`;
+    }
+    s+=`<path d="M${CX} ${yv(S.Vshow)-2} Q${CX+CW/2} ${yv(S.Vshow)+3} ${CX+CW} ${yv(S.Vshow)-2}" fill="none" stroke="#6d7a90" stroke-width="1"/>`;
+  }
+  // tube : deux traits verticaux, haut ouvert
+  // tube avec petit bec verseur à gauche et léger rebord à droite
+  s+=`<path d="M${CX-9} ${top-7} Q${CX-1} ${top-3} ${CX} ${top+9} L${CX} ${Y0} L${CX+CW} ${Y0} L${CX+CW} ${top} L${CX+CW+3} ${top-2}" fill="none" stroke="#7d8aa0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // pied trapézoïdal
+  s+=`<path d="M${CX-6} ${Y0} L${CX+CW+6} ${Y0} L${CX+CW+34} ${Y0+16} L${CX-34} ${Y0+16} Z" fill="#cdd5e1" stroke="#9aa6b8" stroke-width="1.5" stroke-linejoin="round"/>`;
+  // graduations à gauche, à l'intérieur
+  for(let v=1;v<=50;v++){
+    const y=yv(v), L = v%10===0?20:(v%5===0?14:7);
+    s+=`<line x1="${CX}" y1="${y}" x2="${CX+L}" y2="${y}" stroke="#4b5568" stroke-width="${v%5===0?1:.6}"/>`;
+    if(v%10===0) s+=`<text x="${CX+CW+8}" y="${y+4}" font-size="11" fill="#4b5568">${v}</text>`;
+  }
+  s+=`<text x="${CX+CW+8}" y="${yv(50)-18}" font-size="11" fill="#4b5568">mL</text>`;
+  s+=`<text x="${CX+CW/2}" y="362" text-anchor="middle" font-size="12" fill="#5b6475">Éprouvette graduée${S.V1!==null?' – '+(S.liquid==='eau'?'eau':'éthanol'):''}</text>`;
+  $('bench').innerHTML=s;
+}
+
+function drawLoupe(){
+  const c = S.V1!==null ? S.Vshow : 25, K=30, Yc=130;
+  const yy=v=>Yc-(v-c)*K;
+  let s=`<rect width="200" height="260" fill="#fbfcfe"/>`;
+  if(S.V1!==null){
+    const col = S.liquid==='eau' ? '#8ec5f0' : '#f3e9b8';
+    const ye=Yc-0.28*K, yc2=2*Yc-ye;
+    s+=`<path d="M0 ${ye} Q100 ${yc2} 200 ${ye} L200 260 L0 260 Z" fill="${col}" opacity=".7"/>`;
+    s+=`<path d="M0 ${ye} Q100 ${yc2} 200 ${ye}" fill="none" stroke="#3d4a60" stroke-width="2"/>`;
+  }
+  for(let v=Math.floor(c-5);v<=Math.ceil(c+5);v++){
+    if(v<0||v>50) continue;
+    const y=yy(v); const L = v%5===0?120:70;
+    s+=`<line x1="0" y1="${y}" x2="${L}" y2="${y}" stroke="#1d2433" stroke-width="${v%5===0?2:1.2}"/>`;
+    if(v%5===0) s+=`<text x="${L+8}" y="${y+6}" font-size="17" font-weight="600" fill="#1d2433">${v}</text>`;
+  }
+  s+=`<rect x="1" y="1" width="198" height="258" fill="none" stroke="#c7cfdb"/>`;
+  $('loupe').innerHTML=s;
+}
+function render(){ drawBench(); drawLoupe(); updateButtons(); }
+function updateButtons(){
+  $('bCup').textContent = S.cup ? 'Enlever la coupelle' : 'Poser la coupelle';
+  $('bSalt').disabled = !S.cup || S.poured;
+  $('bUnsalt').disabled = !S.cup || S.poured || S.salt===0;
+  $('bFill').disabled = S.V1!==null;
+  $('bPour').disabled = S.poured || S.salt===0 || S.V1===null || !!S.anim;
+  $('bTap').disabled = !S.poured || !!S.anim;
+  document.querySelectorAll('#segLiq button').forEach(b=>{ b.disabled = S.V1!==null; b.setAttribute('aria-pressed', b.dataset.liq===S.liquid); });
+}
+function animateTo(target,dur,onStep,onEnd){
+  const from=S.Vshow, t0=performance.now();
+  S.anim=true;
+  function step(t){
+    const k=Math.min(1,(t-t0)/dur), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    S.Vshow=from+(target-from)*e; if(onStep) onStep(k); render();
+    if(k<1) requestAnimationFrame(step); else { S.anim=null; S.Vshow=target; if(onEnd) onEnd(); render(); }
+  }
+  requestAnimationFrame(step);
+}
+
+$('bCup').onclick=()=>{
+  if(S.cup && S.salt>0 && !S.poured){ say('Retirez d\'abord le sel de la coupelle.','warn'); return; }
+  S.cup=!S.cup;
+  say(S.cup?'Coupelle posée. Pensez à tarer avant d\'ajouter le sel.':'Coupelle retirée.');
+  render();
+};
+$('bTare').onclick=()=>{
+  S.tare=(S.cup?CUP:0)+(S.poured?0:S.salt);
+  say('Balance tarée : elle affiche 0,00 g avec ce qui est posé dessus.');
+  render();
+};
+$('bSalt').onclick=()=>{
+  const add=Math.round((1.6+rnd(performance.now())*1.6)*100)/100;
+  S.salt=Math.round((S.salt+add)*100)/100;
+  say(S.salt<15?'Sel ajouté. Il en faut environ 20 g pour une mesure précise.':'Bonne quantité de sel. Notez la masse affichée.');
+  render();
+};
+$('bUnsalt').onclick=()=>{ S.salt=0; say('Sel retiré de la coupelle.'); render(); };
+document.querySelectorAll('#segLiq button').forEach(b=>b.onclick=()=>{ S.liquid=b.dataset.liq; render(); });
+$('bFill').onclick=()=>{
+  S.V1=Math.round((22+rnd(performance.now()/7)*6)*10)/10;
+  S.Vshow=0;
+  say('Remplissage… Lisez ensuite le volume initial V₁ sur la loupe.');
+  animateTo(S.V1,900);
+};
+$('bPour').onclick=()=>{
+  S.poured=true; S.pouredMass=S.salt; S.undiss=S.salt;
+  if(S.liquid==='ethanol'){
+    S.bub=Math.round((0.5+rnd(performance.now()/3)*0.5)*100)/100;
+    say('Le sel tombe au fond. Des bulles d\'air restent coincées entre les grains : que faire avant de lire V₂ ?');
+    animateTo(targetVolume(),900);
+  } else {
+    S.bub=0;
+    animateTo(targetVolume(),700,null,()=>{
+      // dissolution progressive
+      const maxDiss=Math.min(S.pouredMass, SOLU*S.V1);
+      const t0=performance.now(), d=3500, start=S.undiss;
+      S.anim=true; say('Observez attentivement ce qui arrive aux grains de sel…','warn');
+      (function dis(t){
+        const k=Math.min(1,(t-t0)/d);
+        S.undiss=start-maxDiss*k; S.Vshow=targetVolume(); render();
+        if(k<1) requestAnimationFrame(dis); else { S.anim=null; render();
+          say('Le sel s\'est dissous en grande partie dans l\'eau : le volume du liquide n\'a presque pas augmenté. Cette méthode permet-elle de mesurer le volume du sel ?','warn'); }
+      })(performance.now());
+    });
+  }
+};
+$('bTap').onclick=()=>{
+  if(S.bub===0){ say('Il n\'y a plus de bulles visibles.'); return; }
+  S.bub=0; say('Les bulles d\'air remontent : lisez maintenant le volume final V₂.','ok');
+  animateTo(targetVolume(),800);
+};
+$('bReset').onclick=()=>{
+  Object.assign(S,{cup:false,tare:0,salt:0,V1:null,poured:false,pouredMass:0,undiss:0,bub:0,Vshow:0});
+  ['iM','iV1','iV2','iR'].forEach(i=>$(i).value=''); $('res').innerHTML='';
+  say('Paillasse nettoyée. Commencez par poser la coupelle sur la balance.'); render();
+};
+const num = id => { const v=parseFloat($(id).value.replace(',','.')); return isNaN(v)?null:v; };
+$('bCheck').onclick=()=>{
+  const out=[];
+  const m=num('iM'), v1=num('iV1'), v2=num('iV2'), r=num('iR');
+  const mTrue = S.poured?S.pouredMass:S.salt;
+  if(m===null) out.push(['bad','Masse : non renseignée.']);
+  else if(Math.abs(m-mTrue)<0.006) out.push(['good','Masse : correcte.']);
+  else if(Math.abs(m-(mTrue+CUP))<0.006) out.push(['bad','Masse : vous avez compté la coupelle. Avez-vous taré la balance ?']);
+  else out.push(['bad','Masse : ne correspond pas à la masse de sel pesée.']);
+  if(S.V1===null) out.push(['bad','Volume initial : l\'éprouvette n\'est pas remplie.']);
+  else if(v1===null) out.push(['bad','V₁ : non renseigné.']);
+  else out.push(Math.abs(v1-S.V1)<=0.5?['good','V₁ : lecture correcte (à 0,5 mL près).']:['bad','V₁ : lecture à reprendre. Lisez au bas du ménisque.']);
+  if(S.poured){
+    if(v2===null) out.push(['bad','V₂ : non renseigné.']);
+    else if(S.bub>0 && Math.abs(v2-targetVolume())<=0.5) out.push(['bad','V₂ : lu alors que des bulles d\'air sont encore présentes. Le volume est surestimé.']);
+    else out.push(Math.abs(v2-targetVolume())<=0.5?['good','V₂ : lecture correcte (à 0,5 mL près).']:['bad','V₂ : lecture à reprendre.']);
+  }
+  if(r!==null && m!==null && v1!==null && v2!==null && v2>v1){
+    const rr=m/(v2-v1);
+    out.push(Math.abs(r-rr)/rr<0.02?['good',`ρ : calcul correct avec vos valeurs (${fmt(rr,2)} g/cm³).`]:['bad','ρ : revoyez le calcul ρ = m / (V₂ − V₁).']);
+  }
+  $('res').innerHTML=out.map(([c,t])=>`<div class="${c}">${c==='good'?'✔':'✘'} ${t}</div>`).join('');
+};
+render();
+
+/* =====================================================
+   PARTIE 2 : maille 3D
+   ===================================================== */
+const cv=$('cv'), ctx=cv.getContext('2d');
+const V={n:1,mode:'eclate',rx:-0.42,ry:0.62,auto:true,drag:null};
+const COL={cl:'#3aa655',na:'#7b5cd6',som:'#d9534f',face:'#f0a020',are:'#2f7fd3',cen:'#7b5cd6'};
+const RCL=181/564, RNA=102/564;
+function resize3d(){
+  const r=cv.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  cv.width=Math.max(300,r.width)*d; cv.height=r.height*d; ctx.setTransform(d,0,0,d,0,0);
+}
+window.addEventListener('resize',resize3d);
+function atoms(){
+  const n=V.n, A=[];
+  for(let i=0;i<=2*n;i++)for(let j=0;j<=2*n;j++)for(let k=0;k<=2*n;k++){
+    const p=[i/2,j/2,k/2]; const type=(i+j+k)%2===0?'cl':'na';
+    let pos=null;
+    if(n===1){ const c=p.filter(x=>x===0||x===1).length; pos=['cen','face','are','som'][c]; }
+    A.push({p,type,pos});
+  }
+  return A;
+}
+function rot(p){
+  const c=V.n/2; let x=p[0]-c,y=p[1]-c,z=p[2]-c;
+  let cy=Math.cos(V.ry),sy=Math.sin(V.ry); [x,z]=[x*cy+z*sy,-x*sy+z*cy];
+  let cx=Math.cos(V.rx),sx=Math.sin(V.rx); [y,z]=[y*cx-z*sx,y*sx+z*cx];
+  return [x,y,z];
+}
+function proj(q,W,H){
+  const D=V.n*3.2, f=D/(D+q[2]); const sc=Math.min(W,H)*0.42/V.n;
+  return {x:W/2+q[0]*sc*f, y:H/2-q[1]*sc*f, s:sc*f, z:q[2]};
+}
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255;
+  r=Math.min(255,Math.max(0,r+amt));g=Math.min(255,Math.max(0,g+amt));b=Math.min(255,Math.max(0,b+amt));
+  return `rgb(${r},${g},${b})`;
+}
+function draw3d(){
+  const W=cv.clientWidth,H=cv.clientHeight; ctx.clearRect(0,0,W,H);
+  const showCl=$('cCl').checked, showNa=$('cNa').checked, byPos=$('cPos').checked&&V.n===1, octa=$('cOcta').checked&&V.n===1;
+  // arêtes
+  if($('cEdges').checked){
+    ctx.lineWidth=1.3; ctx.strokeStyle='rgba(40,50,70,.55)';
+    const n=V.n;
+    for(let a=0;a<=n;a++)for(let b=0;b<=n;b++){
+      [[[0,a,b],[n,a,b]],[[a,0,b],[a,n,b]],[[a,b,0],[a,b,n]]].forEach(([u,v])=>{
+        const P=proj(rot(u),W,H),Q=proj(rot(v),W,H);
+        ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(Q.x,Q.y);ctx.stroke();
+      });
+    }
+  }
+  const A=atoms().filter(a=>(a.type==='cl'?showCl:showNa)).map(a=>({...a,q:proj(rot(a.p),W,H)}));
+  A.sort((a,b)=>b.q.z-a.q.z);
+  const isNeighbour=a=>{ if(!octa) return true; const p=a.p;
+    if(a.pos==='cen') return true; return a.pos==='face'; };
+  for(const a of A){
+    const R=(a.type==='cl'?RCL:RNA)*(V.mode==='compact'?1:0.42)*a.q.s;
+    let col = byPos ? COL[a.pos] : COL[a.type];
+    ctx.globalAlpha = isNeighbour(a)?1:0.15;
+    const g=ctx.createRadialGradient(a.q.x-R*.35,a.q.y-R*.35,R*.1,a.q.x,a.q.y,R);
+    g.addColorStop(0,shade(col,90)); g.addColorStop(.55,col); g.addColorStop(1,shade(col,-70));
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(a.q.x,a.q.y,Math.max(1.5,R),0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  if(octa){
+    const c=proj(rot([.5,.5,.5]),W,H);
+    ctx.strokeStyle='rgba(30,30,30,.75)'; ctx.lineWidth=2; ctx.setLineDash([5,4]);
+    [[0,.5,.5],[1,.5,.5],[.5,0,.5],[.5,1,.5],[.5,.5,0],[.5,.5,1]].forEach(p=>{
+      const q=proj(rot(p),W,H); ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(q.x,q.y); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+  }
+  // légende
+  let L='';
+  if(byPos){
+    L=`<span><i class="dot" style="background:${COL.som}"></i>Cl⁻ aux sommets</span>
+       <span><i class="dot" style="background:${COL.face}"></i>Cl⁻ aux centres des faces</span>
+       <span><i class="dot" style="background:${COL.are}"></i>Na⁺ aux milieux des arêtes</span>
+       <span><i class="dot" style="background:${COL.cen}"></i>Na⁺ au centre</span>`;
+  } else {
+    L=`<span><i class="dot" style="background:${COL.cl}"></i>ion chlorure Cl⁻</span>
+       <span><i class="dot" style="background:${COL.na}"></i>ion sodium Na⁺</span>`;
+  }
+  $('legend').innerHTML=L;
+}
+function loop(){
+  if(!$('p2').hidden){ if(V.auto && !V.drag) V.ry+=0.004; draw3d(); }
+  requestAnimationFrame(loop);
+}
+cv.addEventListener('pointerdown',e=>{V.drag={x:e.clientX,y:e.clientY,rx:V.rx,ry:V.ry};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{ if(!V.drag) return;
+  V.ry=V.drag.ry+(e.clientX-V.drag.x)*0.01; V.rx=Math.max(-1.5,Math.min(1.5,V.drag.rx+(e.clientY-V.drag.y)*0.01)); });
+cv.addEventListener('pointerup',()=>{V.drag=null;cv.style.cursor='grab';});
+cv.addEventListener('pointercancel',()=>{V.drag=null;});
+document.querySelectorAll('#segN button').forEach(b=>b.onclick=()=>{
+  V.n=+b.dataset.n; document.querySelectorAll('#segN button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('cPos').disabled=$('cOcta').disabled=V.n!==1;
+});
+document.querySelectorAll('#segR button').forEach(b=>b.onclick=()=>{
+  V.mode=b.dataset.r; document.querySelectorAll('#segR button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+});
+$('cRot').onchange=e=>V.auto=e.target.checked;
+$('bView').onclick=()=>{V.rx=0;V.ry=0;V.auto=false;$('cRot').checked=false;};
+$('bView2').onclick=()=>{V.rx=-0.42;V.ry=0.62;};
+resize3d(); loop();
+
+/* =====================================================
+   PARTIE 3 : spectromètre de Bragg
+   ===================================================== */
+const LAMBDA=154;                 // pm
+const XTAL={NaCl:{a:564,fA:10,fB:18}, KCl:{a:629,fA:18,fB:18}};
+const FAM=[
+  {id:'face', label:'Plans parallèles aux faces', d:a=>a/2,          F:(fA,fB,n)=>fA+fB},
+  {id:'dface',label:'Plans en diagonale d’une face', d:a=>a/(2*Math.SQRT2), F:(fA,fB,n)=>fA+fB},
+  {id:'dcube',label:'Plans en diagonale du cube', d:a=>a/Math.sqrt(3), F:(fA,fB,n)=>n%2===0?fA+fB:Math.abs(fB-fA)}
+];
+const X={xtal:'NaCl',fam:'face',theta:10,curve:new Map(),scan:null};
+const famIcon={
+  face:'<path d="M14 18 L44 18 L44 48 L14 48 Z" fill="#c9d6f7" stroke="none"/>',
+  dface:'<path d="M14 18 L58 4 L58 34 L14 48 Z" fill="#c9d6f7" stroke="none"/>',
+  dcube:'<path d="M14 48 L44 18 L58 34 Z" fill="#c9d6f7" stroke="none"/>'
+};
+function cubeSVG(id){
+  return `<svg viewBox="0 0 64 58">${famIcon[id]}
+   <path d="M14 18 L44 18 L44 48 L14 48 Z M14 18 L28 4 L58 4 L44 18 M44 48 L58 34 L58 4" fill="none" stroke="#4b5568" stroke-width="1.4"/>
+   <path d="M14 48 L28 34 L58 34 M28 34 L28 4" fill="none" stroke="#4b5568" stroke-width="1" stroke-dasharray="3 2"/></svg>`;
+}
+$('famBox').innerHTML=FAM.map(f=>`<button data-f="${f.id}" aria-pressed="${f.id===X.fam}">${cubeSVG(f.id)}<span>${f.label}</span></button>`).join('');
+function peaks(){
+  const c=XTAL[X.xtal], f=FAM.find(f=>f.id===X.fam), d=f.d(c.a), out=[];
+  for(let n=1;n<10;n++){
+    const sn=n*LAMBDA/(2*d); if(sn>Math.sin(80*Math.PI/180)) break;
+    const F=f.F(c.fA,c.fB,n);
+    out.push({n,theta:Math.asin(sn)*180/Math.PI,I:1000*Math.pow(F/28,2)/Math.pow(n,1.6),d});
+  }
+  return out;
+}
+function intensity(th){
+  let I=4+2*Math.exp(-(th-3)/6);
+  for(const p of peaks()) I+=p.I*Math.exp(-Math.pow((th-p.theta)/0.45,2)/2);
+  const noise=1+0.04*(rnd(th*1000+(X.xtal==='KCl'?7:0)+X.fam.length)-0.5);
+  return Math.max(0,I*noise);
+}
+function drawSpectro(){
+  const th=X.theta, r=Math.PI/180, C=[300,230], L=200;
+  const I=intensity(th), glow=Math.min(1,I/400);
+  let s='';
+  // cercle gradué en 2θ
+  s+=`<path d="M${C[0]+L} ${C[1]} A${L} ${L} 0 0 0 ${C[0]+L*Math.cos(170*r)} ${C[1]-L*Math.sin(170*r)}" fill="none" stroke="#d9dee7" stroke-width="1"/>`;
+  for(let a=0;a<=160;a+=10){
+    const x1=C[0]+L*Math.cos(a*r), y1=C[1]-L*Math.sin(a*r), x2=C[0]+(L+8)*Math.cos(a*r), y2=C[1]-(L+8)*Math.sin(a*r);
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#9aa3b2"/>`;
+  }
+  // tube à rayons X
+  s+=`<rect x="20" y="212" width="90" height="36" rx="6" fill="#3b4252"/><text x="65" y="234" text-anchor="middle" font-size="11" fill="#fff">tube à RX</text>`;
+  s+=`<rect x="110" y="225" width="14" height="10" fill="#5c6577"/>`;
+  // faisceau incident + faisceau transmis
+  s+=`<line x1="124" y1="230" x2="${C[0]}" y2="230" stroke="#e0662f" stroke-width="3" opacity=".85"/>`;
+  s+=`<line x1="${C[0]}" y1="230" x2="580" y2="230" stroke="#e0662f" stroke-width="2" opacity=".18" stroke-dasharray="6 5"/>`;
+  // faisceau réfléchi vers le détecteur (angle 2θ)
+  const D=[C[0]+(L-24)*Math.cos(2*th*r), C[1]-(L-24)*Math.sin(2*th*r)];
+  s+=`<line x1="${C[0]}" y1="${C[1]}" x2="${D[0]}" y2="${D[1]}" stroke="#e0662f" stroke-width="${1+3*glow}" opacity="${0.12+0.88*glow}"/>`;
+  // cristal (tourné de θ)
+  s+=`<g transform="rotate(${-th} ${C[0]} ${C[1]})"><rect x="${C[0]-45}" y="${C[1]}" width="90" height="26" fill="#eef1f5" stroke="#7d8aa0" stroke-width="1.5"/>`;
+  for(let k=1;k<5;k++) s+=`<line x1="${C[0]-43}" y1="${C[1]+k*5.2}" x2="${C[0]+43}" y2="${C[1]+k*5.2}" stroke="#9aa6b8" stroke-width=".8"/>`;
+  s+=`</g>`;
+  s+=`<circle cx="${C[0]}" cy="${C[1]}" r="3" fill="#3b4252"/>`;
+  // détecteur
+  const DD=[C[0]+L*Math.cos(2*th*r), C[1]-L*Math.sin(2*th*r)];
+  s+=`<g transform="rotate(${-2*th} ${DD[0]} ${DD[1]})"><rect x="${DD[0]-16}" y="${DD[1]-13}" width="40" height="26" rx="5" fill="${glow>0.3?'#f2b632':'#5c6577'}" stroke="#3b4252" stroke-width="1.2"/></g>`;
+  const LB=[C[0]+(L+34)*Math.cos(2*th*r), C[1]-(L+34)*Math.sin(2*th*r)];
+  s+=`<text x="${LB[0]}" y="${LB[1]+4}" text-anchor="middle" font-size="11" fill="#4b5568">détecteur</text>`;
+  // angle θ
+  s+=`<path d="M${C[0]+60} ${C[1]} A60 60 0 0 0 ${C[0]+60*Math.cos(th*r)} ${C[1]-60*Math.sin(th*r)}" fill="none" stroke="#2f5bd3" stroke-width="1.5"/>`;
+  s+=`<text x="${C[0]+70}" y="${C[1]-6}" font-size="13" fill="#2f5bd3">θ</text>`;
+  s+=`<text x="300" y="318" text-anchor="middle" font-size="12" fill="#5b6475">Le cristal tourne de θ ; le détecteur tourne de 2θ pour recevoir le faisceau réfléchi.</text>`;
+  $('spectro').innerHTML=s;
+}
+const gcv=$('graph'), gx=gcv.getContext('2d');
+function resizeGraph(){ const r=gcv.getBoundingClientRect(), d=window.devicePixelRatio||1; if(!r.width) return; gcv.width=r.width*d; gcv.height=r.height*d; gx.setTransform(d,0,0,d,0,0); }
+const GM={l:46,r:12,t:12,b:30}, T0=0, T1=80;
+function gmax(){ let m=200; for(const v of X.curve.values()) m=Math.max(m,v); return m*1.1; }
+function drawGraph(){
+  const W=gcv.clientWidth,H=gcv.clientHeight; if(!W) return; gx.clearRect(0,0,W,H);
+  const M=gmax(), px=t=>GM.l+(t-T0)/(T1-T0)*(W-GM.l-GM.r), py=v=>H-GM.b-v/M*(H-GM.t-GM.b);
+  gx.strokeStyle='#e6e9ef'; gx.lineWidth=1; gx.fillStyle='#5b6475'; gx.font='11px system-ui'; gx.textAlign='center';
+  for(let t=0;t<=80;t+=5){ gx.beginPath(); gx.moveTo(px(t),GM.t); gx.lineTo(px(t),H-GM.b); gx.stroke(); if(t%10===0) gx.fillText(t+'°',px(t),H-GM.b+15); }
+  gx.textAlign='right';
+  const step=M>2000?500:(M>800?200:100);
+  for(let v=0;v<M;v+=step){ gx.beginPath(); gx.moveTo(GM.l,py(v)); gx.lineTo(W-GM.r,py(v)); gx.stroke(); gx.fillText(v,GM.l-6,py(v)+4); }
+  gx.textAlign='center'; gx.fillText('θ (°)',W-GM.r-14,H-GM.b-6);
+  gx.save(); gx.translate(12,(H-GM.b)/2); gx.rotate(-Math.PI/2); gx.fillText('Intensité (u.a.)',0,0); gx.restore();
+  const pts=[...X.curve.entries()].sort((a,b)=>a[0]-b[0]);
+  gx.strokeStyle='#2f5bd3'; gx.lineWidth=1.4; gx.beginPath();
+  pts.forEach(([t,v],i)=>{ if(i===0) gx.moveTo(px(t),py(v)); else gx.lineTo(px(t),py(v)); });
+  gx.stroke();
+  gx.fillStyle='#2f5bd3';
+  for(const [t,v] of pts){ gx.beginPath(); gx.arc(px(t),py(v),2.4,0,Math.PI*2); gx.fill(); }
+  gx.strokeStyle='#e0662f'; gx.setLineDash([4,3]); gx.beginPath(); gx.moveTo(px(X.theta),GM.t); gx.lineTo(px(X.theta),H-GM.b); gx.stroke(); gx.setLineDash([]);
+}
+function setTheta(t){
+  X.theta=Math.round(Math.min(80,Math.max(3,t))*10)/10; $('theta').value=X.theta;
+  const I=intensity(X.theta); X.curve.set(X.theta,I);
+  $('thv').textContent=fmt(X.theta,1)+'°'; $('iv').textContent=Math.round(I);
+  drawXR();
+}
+function drawXR(){ drawSpectro(); drawGraph(); }
+$('theta').oninput=e=>setTheta(+e.target.value);
+[['tm1',-1],['tm01',-0.1],['tp01',0.1],['tp1',1]].forEach(([id,d])=>$(id).onclick=()=>setTheta(X.theta+d));
+$('bClear').onclick=()=>{ X.curve.clear(); drawGraph(); };
+function resetX(){ X.curve.clear(); setTheta(X.theta); }
+document.querySelectorAll('#segX button').forEach(b=>b.onclick=()=>{ X.xtal=b.dataset.x; document.querySelectorAll('#segX button').forEach(x=>x.setAttribute('aria-pressed',x===b)); resetX(); });
+document.querySelectorAll('#famBox button').forEach(b=>b.onclick=()=>{ X.fam=b.dataset.f; document.querySelectorAll('#famBox button').forEach(x=>x.setAttribute('aria-pressed',x===b)); resetX(); });
+gcv.addEventListener('mousemove',e=>{
+  const r=gcv.getBoundingClientRect(), W=r.width, t=T0+(e.clientX-r.left-GM.l)/(W-GM.l-GM.r)*(T1-T0);
+  if(t<3||t>80){ $('hover').textContent='Survolez la courbe pour lire θ et l’intensité.'; return; }
+  const k=Math.round(t*10)/10, v=X.curve.get(k);
+  $('hover').textContent= v===undefined ? `θ = ${fmt(k,1)}° (pas encore mesuré)` : `θ = ${fmt(k,1)}°  ·  intensité = ${Math.round(v)} u.a.`;
+});
+gcv.addEventListener('click',e=>{ const r=gcv.getBoundingClientRect(); setTheta(T0+(e.clientX-r.left-GM.l)/(r.width-GM.l-GM.r)*(T1-T0)); });
+
+function waveInfo(){
+  const c=XTAL[X.xtal], cat=X.xtal==='NaCl'?'Na⁺':'K⁺';
+  if(X.fam==='dcube'){ const D=c.a/Math.sqrt(3);
+    return {sp:D/2, A1:c.fB, A2:c.fA, l1:'Couche de Cl⁻', l2:'Couche de '+cat+' (à mi-distance)'}; }
+  const f=FAM.find(f=>f.id===X.fam);
+  return {sp:f.d(c.a), A1:c.fA+c.fB, A2:c.fA+c.fB, l1:'Plan 1 ('+cat+' et Cl⁻)', l2:'Plan 2 ('+cat+' et Cl⁻)'};
+}
+let wavePhase=0;
+function drawWaves(){
+  const w=waveInfo(), del=2*w.sp*Math.sin(X.theta*Math.PI/180)/LAMBDA, phi=2*Math.PI*del;
+  const W=560, x0=165, x1=550, Lp=130, S=27/36;
+  const rows=[{y:45,A:w.A1,ph:0,col:'#2f5bd3',lab:w.l1},{y:130,A:w.A2,ph:phi,col:'#e0662f',lab:w.l2}];
+  const R=Math.sqrt(w.A1*w.A1+w.A2*w.A2+2*w.A1*w.A2*Math.cos(phi)), psi=Math.atan2(w.A2*Math.sin(phi), w.A1+w.A2*Math.cos(phi));
+  let s='';
+  const path=(y,A,ph,col,wid)=>{ let d=''; for(let x=x0;x<=x1;x+=3){ const v=y-A*S*Math.sin(2*Math.PI*(x-x0)/Lp-wavePhase-ph); d+=(x===x0?'M':'L')+x+' '+v.toFixed(1)+' '; } return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${wid}"/>`; };
+  for(const r of rows){ s+=`<line x1="${x0}" y1="${r.y}" x2="${x1}" y2="${r.y}" stroke="#e6e9ef"/>`+path(r.y,r.A,r.ph,r.col,2);
+    const [a1,a2]=r.lab.split(' (');
+    s+=`<text x="0" y="${r.y-2}" font-size="13" fill="${r.col}" font-weight="600">${a1}</text>`+(a2?`<text x="0" y="${r.y+14}" font-size="12" fill="#5b6475">(${a2}</text>`:''); }
+  s+=`<line x1="${x0}" y1="240" x2="${x1}" y2="240" stroke="#e6e9ef"/>`+path(240,R,-psi,'#1f8a4c',3);
+  s+=`<text x="0" y="236" font-size="13" font-weight="700" fill="#1f8a4c">Somme des deux</text><text x="0" y="252" font-size="12" fill="#1f8a4c">(ce que reçoit</text><text x="0" y="266" font-size="12" fill="#1f8a4c">le détecteur)</text>`;
+  s+=`<text x="${x0-6}" y="190" font-size="20" fill="#9aa3b2">+</text>`;
+  s+=`<line x1="${x0}" y1="200" x2="${x1}" y2="200" stroke="#9aa3b2" stroke-width="1"/>`;
+  $('waves').innerHTML=s;
+  const fr=del-Math.round(del), eq=w.A1===w.A2;
+  let verdict, cls;
+  if(Math.abs(fr)<0.08){ verdict='Les deux ondes sont <b>en phase</b> : elles s’additionnent.'; cls='good'; }
+  else if(Math.abs(fr)>0.42){ verdict= eq?'Les deux ondes sont <b>en opposition</b> : elles s’annulent.':'Les deux ondes sont <b>en opposition</b> : elles se retranchent, mais la couche de Cl⁻ renvoie plus fort, il reste une petite onde.'; cls='bad'; }
+  else { verdict='Les deux ondes sont <b>décalées</b> : elles se renforcent seulement en partie.'; cls=''; }
+  $('waveTxt').innerHTML=`Retard de l’onde 2 : <b>${fmt(del,2)} longueur(s) d’onde</b>. <span class="${cls}">${verdict}</span>`;
+}
+(function waveLoop(){ if(!$('p3').hidden){ wavePhase+=0.05; drawWaves(); } requestAnimationFrame(waveLoop); })();
+window.addEventListener('resize',()=>{ if(!$('p3').hidden){ resizeGraph(); drawGraph(); } });
+setTheta(10);
+
+</script>
+</body>
+</html>
